@@ -1,4 +1,5 @@
 let changeColor = document.getElementById("changeColor");
+let showTweets = document.getElementById("showTweets");
 
 // Get data from storage (in this case, color data) and use it.
 chrome.storage.sync.get("color", data => {
@@ -21,4 +22,8 @@ changeColor.onclick = element => {
       });
     }
   );
+};
+
+showTweets.onclick = element => {
+  chrome.tabs.executeScript({ file: "getTweets.js" });
 };
