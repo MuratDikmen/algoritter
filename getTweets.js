@@ -1,6 +1,15 @@
 const mutationObserver = new MutationObserver(mutations => {
   mutations.forEach(mutation => {
     if (
+      mutation.addedNodes.length > 0 &&
+      mutation.target.nodeName == "DIV" &&
+      mutation.target.classList.value === ""
+    ) {
+      console.log(mutation.addedNodes[0].textContent);
+    }
+
+    /* Check for retweets or original tweets
+    if (
       mutation.addedNodes.length == 1 &&
       mutation.addedNodes[0].nodeName === "DIV"
     ) {
@@ -15,9 +24,9 @@ const mutationObserver = new MutationObserver(mutations => {
           Here is the retweet message: ${mutation.addedNodes[0].childNodes[0].textContent}`
         );
       } else if (
-        mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
-          .childNodes[1].childNodes[1].childNodes[0].childNodes[0].childNodes[2]
-          .href
+        mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[1].childNodes[0].childNodes[0].childNodes[2].href.includes(
+          "status"
+        )
       ) {
         mutation.addedNodes[0].style.backgroundColor = "green"; // Recognize tweet.
         console.log(
@@ -28,6 +37,7 @@ const mutationObserver = new MutationObserver(mutations => {
         console.log("false");
       }
     }
+    End checking retweet vs. original tweet*/
   });
 });
 
