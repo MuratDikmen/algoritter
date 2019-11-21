@@ -1,12 +1,27 @@
+let tweets = [];
+
 const mutationObserver = new MutationObserver(mutations => {
   mutations.forEach(mutation => {
     if (
       mutation.addedNodes.length > 0 &&
       mutation.target.nodeName == "DIV" &&
-      mutation.target.classList.value === ""
+      mutation.target.classList.value === "" &&
+      mutation.addedNodes[0].nodeName == "DIV"
     ) {
-      console.log(mutation.addedNodes[0].textContent);
+      // if (!tweets.includes(mutation.addedNodes[0].textContent)) {
+      //   tweets.push(mutation.addedNodes[0].textContent);
+      //   console.log(mutation.addedNodes[0].textContent);
+      // } else {
+      //   console.log("Duplicate found...");
+      // }
+      console.log(mutation);
     }
+
+    // Original Tweet ID
+    // mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[1].childNodes[0].childNodes[0].childNodes[2].href
+
+    // Reweet ID (Tweet Inside Retweet)
+    // mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[1].childNodes[0].childNodes[0].childNodes[2].href
 
     /* Check for retweets or original tweets
     if (
@@ -50,13 +65,27 @@ mutationObserver.observe(document.documentElement, {
   characterDataOldValue: true
 });
 
-function paintTweets() {
-  let articles;
-  articles = document.querySelectorAll("article");
-  let articleArr = Array.from(articles);
-  console.log(articleArr.length);
-  console.log(articleArr);
-  articleArr[0].style.backgroundColor = "blue";
+// Painting captures tweets -- In the future should include numbering, once the capture method is finalized.
+// function paintTweets() {
+//   let articles;
+//   articles = document.querySelectorAll("article");
+//   let articleArr = Array.from(articles);
+//   console.log(articleArr.length);
+//   console.log(articleArr);
+//   articleArr[0].style.backgroundColor = "blue";
+// }
+
+// paintTweets();
+
+// This method works, the only issue is textContent changes -- The time is updated, therefore the entire textContent is different.
+function getinitialTweets() {
+  const articles = document.querySelectorAll("article");
+  articles.forEach(article => {
+    const tweetText = article.parentNode.parentNode.textContent;
+    tweets.push(tweetText);
+    console.log(tweetText);
+  });
 }
 
-paintTweets();
+// For now disabled
+// getinitialTweets();
