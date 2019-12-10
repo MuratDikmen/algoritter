@@ -1,6 +1,7 @@
 let tweets = [];
 let tweetContents = [];
 let counter = 1;
+let tweetsToCompare = [];
 
 const mutationObserver = new MutationObserver(mutations => {
   mutations.forEach(mutation => {
@@ -72,24 +73,47 @@ function getinitialTweets() {
   );
   const initialTweets = div.childNodes[0].childNodes[0].childNodes;
   initialTweets.forEach(tweet => {
-    if (tweet.textContent !== "") {
+    if (
+      tweet.textContent !== "" &&
+      tweet.textContent.substring(
+        tweet.textContent.length - 8,
+        tweet.textContent.length
+      ) !== "Promoted" &&
+      !tweet.textContent.includes("Who to Follow")
+    ) {
       const href =
-        tweet.lastChild.childNodes[0].childNodes[0].childNodes[1].lastChild
+        tweet.lastChild.firstChild.childNodes[0].childNodes[1].lastChild
           .firstChild.firstChild.lastChild.href;
+
+      let isRetweet = false;
+      if (
+        tweet.lastChild.firstChild.firstChild.firstChild.textContent.includes(
+          "Retweeted"
+        )
+      ) {
+        isRetweet = true;
+      }
+
       // const tweetContent = tweet.textContent;
       // const tweetContentLastChars = tweetContent.substring(
       //   tweetContent.length - 25,
       //   tweetContent.length
       // );
 
-      if (!tweets.includes(href)) {
-        tweets.push(href);
+      const tweetId = href.split("/").pop();
+
+      if (!tweets.includes(tweetId)) {
+        tweets.push(tweetId);
         console.log(href);
       }
 
+      tweetsToCompare.push({ tweetId, isRetweet });
+      console.log(tweetsToCompare);
+      const dataToSend = { data: tweetsToCompare };
+
       console.log(tweets.length);
 
-      const num = tweets.indexOf(href);
+      const num = tweets.indexOf(tweetId);
 
       const p = document.createElement("p");
       p.style.width = "30px";
@@ -103,7 +127,7 @@ function getinitialTweets() {
       p.style.color = "white";
       p.style.textAlign = "center";
       p.style.fontFamily = "sans-serif";
-      p.textContent = String(num);
+      p.textContent = String(num) + isRetweet;
       // counter++;
       tweet.insertBefore(p, tweet.firstChild);
       // console.log(tweets);
@@ -156,7 +180,7 @@ const identifyMutation = mutation => {
 
     let isThread = false;
     let isPreviousThread = false;
-
+    let isRetweet = false;
     // if (mutation.addedNodes[0].innerHTML.includes("r-432wen")) {
     //   isThread = true;
     //   if (
@@ -166,18 +190,28 @@ const identifyMutation = mutation => {
     //   }
     // }
 
+    if (
+      mutation.addedNodes[0].lastChild.firstChild.firstChild.firstChild.textContent.includes(
+        "Retweeted"
+      )
+    ) {
+      isRetweet = true;
+    }
+
     const tweetContent = mutation.addedNodes[0].textContent;
     const tweetContentLastChars = tweetContent.substring(
       tweetContent.length - 25,
       tweetContent.length
     );
 
-    if (!tweets.includes(href)) {
-      tweets.push(href);
+    const tweetId = href.split("/").pop();
+
+    if (!tweets.includes(tweetId)) {
+      tweets.push(tweetId);
     }
 
-    const num = tweets.indexOf(href);
-
+    tweetsToCompare.push({ tweetId, isRetweet });
+    const num = tweets.indexOf(tweetId);
     const p = document.createElement("p");
     p.style.width = "30px";
     p.style.height = "30px";
@@ -190,7 +224,7 @@ const identifyMutation = mutation => {
     p.style.color = "white";
     p.style.textAlign = "center";
     p.style.fontFamily = "sans-serif";
-    p.textContent = String(num);
+    p.textContent = String(num) + isRetweet;
     if (isThread) {
       p.style.backgroundColor = "blue";
     }
@@ -207,4 +241,31 @@ const identifyMutation = mutation => {
   // return mutationType;
 };
 
-getinitialTweets();
+// getinitialTweets();
+
+fetch("https://algoritter.herokuapp.com/test")
+  .then(res => res.text())
+  .then(data => console.log(data))
+  .catch(err => console.log(err));
+
+fetch("https://algoritter.herokuapp.com/tweets", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ murat: "dikmen" })
+})
+  .then(res => res.text())
+  .then(data => console.log("Gelen data : " + data))
+  .catch(err => console.log(err));
+
+// fetch("https://algoritter.herokuapp.com/tweets", {
+//   method: "POST",
+//   headers: {
+//     "Content-Type": "application/json"
+//   },
+//   body: JSON.stringify({ name: "aykut" })
+// })
+//   .then(res => res.json())
+//   .then(data => console.log(data))
+//   .catch(err => console.log(err));

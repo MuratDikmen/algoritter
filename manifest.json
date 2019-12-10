@@ -2,7 +2,12 @@
   "name": "Algoritter",
   "version": "1.0",
   "description": "A browser extension to peek into Twitter's algorithmic curation.",
-  "permissions": ["activeTab", "declarativeContent", "storage"],
+  "permissions": [
+    "https://algoritter.herokuapp.com/tweets",
+    "activeTab",
+    "declarativeContent",
+    "storage"
+  ],
   "background": {
     "scripts": ["background.js"],
     "persistent": false
