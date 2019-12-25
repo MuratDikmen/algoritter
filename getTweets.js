@@ -107,19 +107,19 @@ function getinitialTweets() {
         console.log(href);
       }
 
-      tweetsToCompare.push({ tweetId, isRetweet });
-      console.log(tweetsToCompare);
-      const dataToSend = { data: tweetsToCompare };
+      // tweetsToCompare.push({ tweetId, isRetweet });
+      // console.log(tweetsToCompare);
+      // const dataToSend = { data: tweetsToCompare };
 
       console.log(tweets.length);
 
       const num = tweets.indexOf(tweetId);
-
+      const num2 = tweetsToCompare.indexOf(tweetId);
+      const rankChange = num2 == -1 ? 999 : num2 - num;
       const p = document.createElement("p");
-      p.style.width = "30px";
+      p.style.width = "450px";
       p.style.height = "30px";
       p.style.backgroundColor = "rgb(220, 54, 126)";
-      p.style.borderRadius = "50%";
       p.style.display = "flex";
       p.style.alignItems = "center";
       p.style.justifyContent = "center";
@@ -127,7 +127,15 @@ function getinitialTweets() {
       p.style.color = "white";
       p.style.textAlign = "center";
       p.style.fontFamily = "sans-serif";
-      p.textContent = String(num) + isRetweet;
+      p.textContent =
+        "On the page: " +
+        String(num) +
+        " ** " +
+        "Actual on the list: " +
+        String(num2) +
+        " ** " +
+        "Rank Change: " +
+        String(rankChange);
       // counter++;
       tweet.insertBefore(p, tweet.firstChild);
       // console.log(tweets);
@@ -210,13 +218,14 @@ const identifyMutation = mutation => {
       tweets.push(tweetId);
     }
 
-    tweetsToCompare.push({ tweetId, isRetweet });
+    // tweetsToCompare.push({ tweetId, isRetweet });
     const num = tweets.indexOf(tweetId);
+    const num2 = tweetsToCompare.indexOf(tweetId);
+    const rankChange = num2 == -1 ? 999 : num2 - num;
     const p = document.createElement("p");
-    p.style.width = "30px";
+    p.style.width = "450px";
     p.style.height = "30px";
     p.style.backgroundColor = "rgb(220, 54, 126)";
-    p.style.borderRadius = "50%";
     p.style.display = "flex";
     p.style.alignItems = "center";
     p.style.justifyContent = "center";
@@ -224,7 +233,15 @@ const identifyMutation = mutation => {
     p.style.color = "white";
     p.style.textAlign = "center";
     p.style.fontFamily = "sans-serif";
-    p.textContent = String(num) + isRetweet;
+    p.textContent =
+      "On the page: " +
+      String(num) +
+      " ** " +
+      "Actual on the list: " +
+      String(num2) +
+      " ** " +
+      "Rank Change: " +
+      String(rankChange);
     if (isThread) {
       p.style.backgroundColor = "blue";
     }
@@ -243,21 +260,21 @@ const identifyMutation = mutation => {
 
 // getinitialTweets();
 
-fetch("https://algoritter.herokuapp.com/test")
-  .then(res => res.text())
-  .then(data => console.log(data))
-  .catch(err => console.log(err));
+// fetch("https://algoritter.herokuapp.com/test")
+//   .then(res => res.text())
+//   .then(data => console.log(data))
+//   .catch(err => console.log(err));
 
-fetch("https://algoritter.herokuapp.com/tweets", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ murat: "dikmen" })
-})
-  .then(res => res.text())
-  .then(data => console.log("Gelen data : " + data))
-  .catch(err => console.log(err));
+// fetch("https://algoritter.herokuapp.com/tweets", {
+//   method: "POST",
+//   headers: {
+//     "Content-Type": "application/json"
+//   },
+//   body: JSON.stringify({ murat: "dikmen" })
+// })
+//   .then(res => res.text())
+//   .then(data => console.log("Gelen data : " + data))
+//   .catch(err => console.log(err));
 
 // fetch("https://algoritter.herokuapp.com/tweets", {
 //   method: "POST",
@@ -269,3 +286,22 @@ fetch("https://algoritter.herokuapp.com/tweets", {
 //   .then(res => res.json())
 //   .then(data => console.log(data))
 //   .catch(err => console.log(err));
+
+async function init() {
+  try {
+    const res = await fetch("https://algoritter.herokuapp.com/");
+    const data = await res.json();
+    tweetsToCompare = data.data.map(tweet =>
+      tweet.retweeted_status == null
+        ? tweet.id_str
+        : tweet.retweeted_status.id_str
+    );
+    getinitialTweets();
+    console.log(data);
+    console.log(tweetsToCompare);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+init();
