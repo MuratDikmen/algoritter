@@ -67,7 +67,7 @@ mutationObserver.observe(document.documentElement, {
 });
 
 // This method works, the only issue is textContent changes -- The time is updated, therefore the entire textContent is different.
-function getinitialTweets() {
+const getinitialTweets = () => {
   const div = document.querySelector(
     "div[aria-label='Timeline: Your Home Timeline']"
   );
@@ -86,6 +86,7 @@ function getinitialTweets() {
           .firstChild.firstChild.lastChild.href;
 
       let isRetweet = false;
+      let isThread = false;
       if (
         tweet.lastChild.firstChild.firstChild.firstChild.textContent.includes(
           "Retweeted"
@@ -94,11 +95,13 @@ function getinitialTweets() {
         isRetweet = true;
       }
 
-      // const tweetContent = tweet.textContent;
-      // const tweetContentLastChars = tweetContent.substring(
-      //   tweetContent.length - 25,
-      //   tweetContent.length
-      // );
+      if (
+        tweet.lastChild.firstChild.firstChild.lastChild.firstChild.lastChild.classList.contains(
+          "r-m5arl1"
+        )
+      ) {
+        isThread = true;
+      }
 
       const tweetId = href.split("/").pop();
 
@@ -106,10 +109,6 @@ function getinitialTweets() {
         tweets.push(tweetId);
         console.log(href);
       }
-
-      // tweetsToCompare.push({ tweetId, isRetweet });
-      // console.log(tweetsToCompare);
-      // const dataToSend = { data: tweetsToCompare };
 
       console.log(tweets.length);
 
@@ -135,14 +134,16 @@ function getinitialTweets() {
         String(num2) +
         " ** " +
         "Rank Change: " +
-        String(rankChange);
+        String(rankChange) +
+        " Is this thread? " +
+        isThread;
       // counter++;
       tweet.insertBefore(p, tweet.firstChild);
       // console.log(tweets);
       // console.log(tweetContents);
     }
   });
-}
+};
 
 // For now disabled
 
@@ -151,6 +152,9 @@ function getinitialTweets() {
 // Finally const ui = new UI()
 // ui.observe(args)
 
+// ==============================
+//
+// ==============================
 const identifyMutation = mutation => {
   let mutationType = "";
   // Check mutation type
@@ -169,18 +173,9 @@ const identifyMutation = mutation => {
     //// Scrolling up or down
     let isCaptured = false;
 
-    // console.log(
-    //   mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
-    //     .childNodes[0].textContent
-    // );
-
     const href =
       mutation.addedNodes[0].lastChild.childNodes[0].childNodes[0].childNodes[1]
         .lastChild.firstChild.firstChild.lastChild.href;
-
-    // Check
-
-    //
 
     if (!isCaptured) {
       // Now capture the tweet...
@@ -189,14 +184,6 @@ const identifyMutation = mutation => {
     let isThread = false;
     let isPreviousThread = false;
     let isRetweet = false;
-    // if (mutation.addedNodes[0].innerHTML.includes("r-432wen")) {
-    //   isThread = true;
-    //   if (
-    //     mutation.addedNodes[0].previousSibling.innerHTML.includes("r-432wen")
-    //   ) {
-    //     isPreviousThread = true;
-    //   }
-    // }
 
     if (
       mutation.addedNodes[0].lastChild.firstChild.firstChild.firstChild.textContent.includes(
@@ -204,6 +191,16 @@ const identifyMutation = mutation => {
       )
     ) {
       isRetweet = true;
+    }
+
+    // Implement isThread
+
+    if (
+      mutation.addedNodes[0].lastChild.firstChild.firstChild.lastChild.firstChild.lastChild.classList.contains(
+        "r-m5arl1"
+      )
+    ) {
+      isThread = true;
     }
 
     const tweetContent = mutation.addedNodes[0].textContent;
@@ -241,7 +238,9 @@ const identifyMutation = mutation => {
       String(num2) +
       " ** " +
       "Rank Change: " +
-      String(rankChange);
+      String(rankChange) +
+      "Is this a thread? " +
+      isThread;
     if (isThread) {
       p.style.backgroundColor = "blue";
     }
@@ -258,35 +257,9 @@ const identifyMutation = mutation => {
   // return mutationType;
 };
 
-// getinitialTweets();
-
-// fetch("https://algoritter.herokuapp.com/test")
-//   .then(res => res.text())
-//   .then(data => console.log(data))
-//   .catch(err => console.log(err));
-
-// fetch("https://algoritter.herokuapp.com/tweets", {
-//   method: "POST",
-//   headers: {
-//     "Content-Type": "application/json"
-//   },
-//   body: JSON.stringify({ murat: "dikmen" })
-// })
-//   .then(res => res.text())
-//   .then(data => console.log("Gelen data : " + data))
-//   .catch(err => console.log(err));
-
-// fetch("https://algoritter.herokuapp.com/tweets", {
-//   method: "POST",
-//   headers: {
-//     "Content-Type": "application/json"
-//   },
-//   body: JSON.stringify({ name: "aykut" })
-// })
-//   .then(res => res.json())
-//   .then(data => console.log(data))
-//   .catch(err => console.log(err));
-
+// ==============================
+// Initialization of the App
+// ==============================
 async function init() {
   try {
     const res = await fetch("https://algoritter.herokuapp.com/");
