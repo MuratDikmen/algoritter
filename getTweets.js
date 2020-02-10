@@ -171,11 +171,20 @@ const identifyMutation = mutation => {
     // This certainly captures all tweet objects. But does it only capture tweet objects?
     //// First, Check if Captured, If not proceed with the Identification phase.. Because childNodes etc. might be different depending on
     //// Scrolling up or down
+
+    console.log(mutation);
+
     let isCaptured = false;
 
     const href =
-      mutation.addedNodes[0].lastChild.childNodes[0].childNodes[0].childNodes[1]
-        .lastChild.firstChild.firstChild.lastChild.href;
+      mutation.addedNodes[0].lastChild.firstChild.firstChild.lastChild.lastChild
+        .firstChild.firstChild.firstChild.lastChild.href;
+
+    console.log(href);
+
+    // const href =
+    //   mutation.addedNodes[0].lastChild.childNodes[0].childNodes[0].childNodes[1]
+    //     .lastChild.firstChild.firstChild.lastChild.href;
 
     if (!isCaptured) {
       // Now capture the tweet...
@@ -198,9 +207,28 @@ const identifyMutation = mutation => {
     if (
       mutation.addedNodes[0].lastChild.firstChild.firstChild.lastChild.firstChild.lastChild.classList.contains(
         "r-m5arl1"
-      )
+      ) ||
+      (mutation.addedNodes[0].lastChild.firstChild.firstChild.firstChild
+        .firstChild.childNodes.length > 0 &&
+        mutation.addedNodes[0].lastChild.firstChild.firstChild.firstChild.firstChild.firstChild.classList.contains(
+          "r-m5arl1"
+        ))
     ) {
       isThread = true;
+      const p = document.createElement("p");
+      p.style.width = "450px";
+      p.style.height = "30px";
+      p.style.backgroundColor = "rgb(220, 54, 126)";
+      p.style.display = "flex";
+      p.style.alignItems = "center";
+      p.style.justifyContent = "center";
+      p.style.fontSize = "20px";
+      p.style.color = "white";
+      p.style.textAlign = "center";
+      p.style.fontFamily = "sans-serif";
+      p.textContent = "This is a thread and will be ignored";
+      mutation.addedNodes[0].insertBefore(p, mutation.addedNodes[0].firstChild);
+      return;
     }
 
     const tweetContent = mutation.addedNodes[0].textContent;
@@ -264,11 +292,26 @@ async function init() {
   try {
     const res = await fetch("https://algoritter.herokuapp.com/");
     const data = await res.json();
-    tweetsToCompare = data.data.map(tweet =>
+    console.log(data.data);
+    let threadFreeTweetList = [];
+    let tweetsToRemove = [];
+    data.data.forEach(tweet => {
+      if (tweet.in_reply_to_status_id_str !== null) {
+        tweetsToRemove.push(tweet.in_reply_to_status_id_str);
+        tweetsToRemove.push(tweet.id_str);
+      }
+    });
+
+    console.log(tweetsToRemove);
+    threadFreeTweetList = data.data.filter(
+      tweet => !tweetsToRemove.includes(tweet.id_str)
+    );
+    tweetsToCompare = threadFreeTweetList.map(tweet =>
       tweet.retweeted_status == null
         ? tweet.id_str
         : tweet.retweeted_status.id_str
     );
+    console.log(threadFreeTweetList);
     getinitialTweets();
     console.log(data);
     console.log(tweetsToCompare);
@@ -278,3 +321,15 @@ async function init() {
 }
 
 init();
+
+// const app = () => {
+
+//   const init = () => {
+//     return "gogog";
+//   };
+
+//   return {
+//     init: init
+//   };
+
+// };
