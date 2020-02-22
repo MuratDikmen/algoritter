@@ -82,7 +82,7 @@ const getinitialTweets = () => {
       !tweet.textContent.includes("Who to Follow")
     ) {
       const href =
-        tweet.lastChild.firstChild.childNodes[0].childNodes[1].lastChild
+        tweet.lastChild.firstChild.firstChild.lastChild.lastChild.firstChild
           .firstChild.firstChild.lastChild.href;
 
       let isRetweet = false;
@@ -95,12 +95,33 @@ const getinitialTweets = () => {
         isRetweet = true;
       }
 
+      // Thread Elimination
+
       if (
         tweet.lastChild.firstChild.firstChild.lastChild.firstChild.lastChild.classList.contains(
           "r-m5arl1"
-        )
+        ) ||
+        (tweet.lastChild.firstChild.firstChild.firstChild.firstChild.childNodes
+          .length > 0 &&
+          tweet.lastChild.firstChild.firstChild.firstChild.firstChild.firstChild.classList.contains(
+            "r-m5arl1"
+          ))
       ) {
         isThread = true;
+        const p = document.createElement("p");
+        p.style.width = "450px";
+        p.style.height = "30px";
+        p.style.backgroundColor = "rgb(220, 54, 126)";
+        p.style.display = "flex";
+        p.style.alignItems = "center";
+        p.style.justifyContent = "center";
+        p.style.fontSize = "20px";
+        p.style.color = "white";
+        p.style.textAlign = "center";
+        p.style.fontFamily = "sans-serif";
+        p.textContent = "This is a thread and will be ignored";
+        tweet.insertBefore(p, tweet.firstChild);
+        return;
       }
 
       const tweetId = href.split("/").pop();
@@ -247,6 +268,8 @@ const identifyMutation = mutation => {
     const num = tweets.indexOf(tweetId);
     const num2 = tweetsToCompare.indexOf(tweetId);
     const rankChange = num2 == -1 ? 999 : num2 - num;
+    const ui = new UI();
+    const symbol = ui.createRankSymbol(rankChange);
     const p = document.createElement("p");
     p.style.width = "450px";
     p.style.height = "30px";
@@ -276,7 +299,17 @@ const identifyMutation = mutation => {
       p.style.backgroundColor = "red";
     }
     // counter++;
+
+    const aNode =
+      mutation.addedNodes[0].lastChild.firstChild.firstChild.lastChild.lastChild
+        .firstChild.firstChild.firstChild.lastChild;
+    aNode.parentNode.insertBefore(symbol, aNode.nextSibling);
     mutation.addedNodes[0].insertBefore(p, mutation.addedNodes[0].firstChild);
+    mutation.addedNodes[0].insertBefore(
+      symbol,
+      mutation.addedNodes[0].firstChild
+    );
+    aNode.parentNode.insertBefore(symbol, aNode.nextSibling);
     // console.log(tweets.length);
     // console.log(tweetContents);
     // console.log(mutation);
@@ -333,3 +366,43 @@ init();
 //   };
 
 // };
+
+function UI() {
+  const createRankSymbol = rankDiff => {
+    const div = document.createElement("div");
+    const arrow = document.createElement("div");
+    arrow.style.width = "0";
+    arrow.style.height = "0";
+    arrow.style.display = "inline-block";
+    arrow.style.borderColor = "transparent";
+    arrow.style.borderStyle = "inset";
+    arrow.style.borderWidth = "10px";
+
+    if (rankDiff > 0) {
+      arrow.style.borderBottom = "10px solid green";
+      arrow.style.transform = "translate(0px, 30%) rotate(-90deg)";
+      div.style.color = "green";
+    } else if (rankDiff === -1) {
+      arrow.style.borderRight = "10px solid black";
+      arrow.style.transform = "translate(0px, 30%) rotate(45deg)";
+      div.style.color = "black";
+    } else if (rankDiff < 0) {
+      arrow.style.transform = "translate(30%, 30%) rotate(-90deg)";
+      arrow.style.borderTop = "10px solid red";
+      div.style.color = "red";
+    } else {
+      arrow.style.borderLeft = "10px solid yellow";
+      arrow.style.transform = "translate(-30%, 30%) rotate(180deg)";
+      div.style.color = "yellow";
+    }
+
+    div.appendChild(arrow);
+    div.appendChild(document.createTextNode(`${rankDiff}`));
+
+    return div;
+  };
+
+  return {
+    createRankSymbol: createRankSymbol
+  };
+}
