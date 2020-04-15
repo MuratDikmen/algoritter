@@ -3,76 +3,24 @@ let tweetContents = [];
 let counter = 1;
 let tweetsToCompare = [];
 
-const mutationObserver = new MutationObserver(mutations => {
-  mutations.forEach(mutation => {
+const mutationObserver = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
     // Determine type of mutation e.g.
     identifyMutation(mutation);
-    // if mutationType == tweet or retweet, do stuff.
-    // this will keep the code clean.
-
-    // Working code below.
-    // if (
-    //   mutation.addedNodes.length > 0 &&
-    //   mutation.target.nodeName == "DIV" &&
-    //   mutation.target.classList.value === "" &&
-    //   mutation.addedNodes[0].nodeName == "DIV"
-    // ) {
-    //   if (
-    //     mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[1].childNodes[0].childNodes[0].childNodes[2].href.includes(
-    //       "status"
-    //     ) &&
-    //     !tweets.includes(
-    //       mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
-    //         .childNodes[1].childNodes[1].childNodes[0].childNodes[0]
-    //         .childNodes[2].href
-    //     )
-    //   ) {
-    //     tweets.push(
-    //       mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
-    //         .childNodes[1].childNodes[1].childNodes[0].childNodes[0]
-    //         .childNodes[2].href
-    //     );
-    //     const div = document.createElement("div");
-    //     div.textContent = tweets.indexOf(
-    //       mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
-    //         .childNodes[1].childNodes[1].childNodes[0].childNodes[0]
-    //         .childNodes[2].href
-    //     );
-    //     div.style.backgroundColor = "blue";
-    //     div.style.color = "white !important";
-    //     mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[1].childNodes[0].childNodes[0].appendChild(
-    //       div
-    //     );
-    //   } else {
-    //     const div = document.createElement("div");
-    //     div.textContent = tweets.indexOf(
-    //       mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
-    //         .childNodes[1].childNodes[1].childNodes[0].childNodes[0]
-    //         .childNodes[2].href
-    //     );
-    //     div.style.backgroundColor = "blue";
-    //     div.style.color = "white !important";
-    //     mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[1].childNodes[0].childNodes[0].appendChild(
-    //       div
-    //     );
-    //   }
-    // }
-    // Working code above.
   });
 });
 
 mutationObserver.observe(document.documentElement, {
   subtree: true,
-  childList: true
+  childList: true,
 });
 
-// This method works, the only issue is textContent changes -- The time is updated, therefore the entire textContent is different.
 const getinitialTweets = () => {
   const div = document.querySelector(
     "div[aria-label='Timeline: Your Home Timeline']"
   );
   const initialTweets = div.childNodes[0].childNodes[0].childNodes;
-  initialTweets.forEach(tweet => {
+  initialTweets.forEach((tweet) => {
     if (
       tweet.textContent !== "" &&
       tweet.textContent.substring(
@@ -81,9 +29,31 @@ const getinitialTweets = () => {
       ) !== "Promoted" &&
       !tweet.textContent.includes("Who to Follow")
     ) {
-      const href =
-        tweet.lastChild.firstChild.firstChild.lastChild.lastChild.firstChild
-          .firstChild.firstChild.lastChild.href;
+      let href;
+      let hrefParent;
+
+      if (
+        tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
+          .firstChild.firstChild.firstChild.firstChild.lastChild.href !==
+        undefined
+      ) {
+        href =
+          tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
+            .firstChild.firstChild.firstChild.firstChild.lastChild.href;
+        hrefParent =
+          tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
+            .firstChild.firstChild.firstChild.firstChild.lastChild;
+      } else {
+        href =
+          tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
+            .lastChild.firstChild.firstChild.firstChild.firstChild.lastChild
+            .href;
+        hrefParent =
+          tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
+            .lastChild.firstChild.firstChild.firstChild.firstChild;
+      }
+
+      console.log(href);
 
       let isRetweet = false;
       let isThread = false;
@@ -107,20 +77,7 @@ const getinitialTweets = () => {
             "r-m5arl1"
           ))
       ) {
-        isThread = true;
-        const p = document.createElement("p");
-        p.style.width = "450px";
-        p.style.height = "30px";
-        p.style.backgroundColor = "rgb(220, 54, 126)";
-        p.style.display = "flex";
-        p.style.alignItems = "center";
-        p.style.justifyContent = "center";
-        p.style.fontSize = "20px";
-        p.style.color = "white";
-        p.style.textAlign = "center";
-        p.style.fontFamily = "sans-serif";
-        p.textContent = "This is a thread and will be ignored";
-        tweet.insertBefore(p, tweet.firstChild);
+        console.log("returning");
         return;
       }
 
@@ -128,7 +85,6 @@ const getinitialTweets = () => {
 
       if (!tweets.includes(tweetId)) {
         tweets.push(tweetId);
-        console.log(href);
       }
 
       console.log(tweets.length);
@@ -136,32 +92,21 @@ const getinitialTweets = () => {
       const num = tweets.indexOf(tweetId);
       const num2 = tweetsToCompare.indexOf(tweetId);
       const rankChange = num2 == -1 ? 999 : num2 - num;
-      const p = document.createElement("p");
-      p.style.width = "450px";
-      p.style.height = "30px";
-      p.style.backgroundColor = "rgb(220, 54, 126)";
-      p.style.display = "flex";
-      p.style.alignItems = "center";
-      p.style.justifyContent = "center";
-      p.style.fontSize = "20px";
-      p.style.color = "white";
-      p.style.textAlign = "center";
-      p.style.fontFamily = "sans-serif";
-      p.textContent =
-        "On the page: " +
-        String(num) +
-        " ** " +
-        "Actual on the list: " +
-        String(num2) +
-        " ** " +
-        "Rank Change: " +
-        String(rankChange) +
-        " Is this thread? " +
-        isThread;
-      // counter++;
-      tweet.insertBefore(p, tweet.firstChild);
-      // console.log(tweets);
-      // console.log(tweetContents);
+      const ui = new UI();
+      const icon = ui.createRankIcon(rankChange);
+
+      console.log("lol");
+      console.log(icon);
+
+      // const aNode =
+      //   tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
+      //     .firstChild.firstChild.firstChild.firstChild.lastChild;
+      // hrefParent.parentNode.parentNode.insertBefore(
+      //   icon,
+      //   hrefParent.parentNode.nextSibling
+      // );
+
+      hrefParent.appendChild(icon);
     }
   });
 };
@@ -174,42 +119,33 @@ const getinitialTweets = () => {
 // ui.observe(args)
 
 // ==============================
-//
+// IDENTIFY EACH MUTATION AND PROCESS IF IT IS A TWEET
 // ==============================
-const identifyMutation = mutation => {
+const identifyMutation = (mutation) => {
   let mutationType = "";
-  // Check mutation type
-  // First check: mutation.addedNodes must be equal to greater than 0
+
+  // Check to see if the added node is the div that contains the tweet.
+  // Note that this method is very fragile and doesn't work if Twitter changes the DOM structure.
   if (
     mutation.addedNodes.length > 0 &&
-    mutation.target.nodeName == "DIV" &&
+    mutation.target.tagName == "DIV" &&
     mutation.target.classList.value === "" &&
-    mutation.addedNodes[0].nodeName == "DIV" &&
+    mutation.addedNodes[0].tagName == "DIV" &&
     mutation.addedNodes[0].textContent != "" &&
     !mutation.addedNodes[0].textContent.includes("Who to Follow") &&
-    mutation.addedNodes[0].childNodes[0].childNodes[0].nodeName == "ARTICLE"
+    mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
+      .childNodes[0].tagName == "ARTICLE"
   ) {
-    // This certainly captures all tweet objects. But does it only capture tweet objects?
-    //// First, Check if Captured, If not proceed with the Identification phase.. Because childNodes etc. might be different depending on
-    //// Scrolling up or down
+    // Defining the link in steps, otherwise it is very difficult to troubleshoot when Twitter changes the DOM structure.
+    let article =
+      mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
+        .childNodes[0];
+    let tweetColumn = article.firstChild.lastChild.lastChild;
+    let upperBar = tweetColumn.firstChild.firstChild.firstChild;
+    let link = upperBar.firstChild.lastChild;
 
-    console.log(mutation);
-
-    let isCaptured = false;
-
-    const href =
-      mutation.addedNodes[0].lastChild.firstChild.firstChild.lastChild.lastChild
-        .firstChild.firstChild.firstChild.lastChild.href;
-
-    console.log(href);
-
-    // const href =
-    //   mutation.addedNodes[0].lastChild.childNodes[0].childNodes[0].childNodes[1]
-    //     .lastChild.firstChild.firstChild.lastChild.href;
-
-    if (!isCaptured) {
-      // Now capture the tweet...
-    }
+    // Get the tweet handle link.
+    const href = link.href;
 
     let isThread = false;
     let isPreviousThread = false;
@@ -223,8 +159,7 @@ const identifyMutation = mutation => {
       isRetweet = true;
     }
 
-    // Implement isThread
-
+    // Return if isThread -- Need to find a cleaner way of implementing this.
     if (
       mutation.addedNodes[0].lastChild.firstChild.firstChild.lastChild.firstChild.lastChild.classList.contains(
         "r-m5arl1"
@@ -235,20 +170,6 @@ const identifyMutation = mutation => {
           "r-m5arl1"
         ))
     ) {
-      isThread = true;
-      const p = document.createElement("p");
-      p.style.width = "450px";
-      p.style.height = "30px";
-      p.style.backgroundColor = "rgb(220, 54, 126)";
-      p.style.display = "flex";
-      p.style.alignItems = "center";
-      p.style.justifyContent = "center";
-      p.style.fontSize = "20px";
-      p.style.color = "white";
-      p.style.textAlign = "center";
-      p.style.fontFamily = "sans-serif";
-      p.textContent = "This is a thread and will be ignored";
-      mutation.addedNodes[0].insertBefore(p, mutation.addedNodes[0].firstChild);
       return;
     }
 
@@ -258,64 +179,28 @@ const identifyMutation = mutation => {
       tweetContent.length
     );
 
+    // Get tweet handle from the URL.
     const tweetId = href.split("/").pop();
 
+    // Add tweet handle to the list of tweets to keep track of.
     if (!tweets.includes(tweetId)) {
       tweets.push(tweetId);
     }
 
-    // tweetsToCompare.push({ tweetId, isRetweet });
+    // Get indices of the tweet in client tweet list and server tweet list and get the difference in ranks.
     const num = tweets.indexOf(tweetId);
     const num2 = tweetsToCompare.indexOf(tweetId);
     const rankChange = num2 == -1 ? 999 : num2 - num;
+
+    // Initialize a new UI object and create an icon based on the rank differences between client and server.
     const ui = new UI();
-    const symbol = ui.createRankSymbol(rankChange);
-    const p = document.createElement("p");
-    p.style.width = "450px";
-    p.style.height = "30px";
-    p.style.backgroundColor = "rgb(220, 54, 126)";
-    p.style.display = "flex";
-    p.style.alignItems = "center";
-    p.style.justifyContent = "center";
-    p.style.fontSize = "20px";
-    p.style.color = "white";
-    p.style.textAlign = "center";
-    p.style.fontFamily = "sans-serif";
-    p.textContent =
-      "On the page: " +
-      String(num) +
-      " ** " +
-      "Actual on the list: " +
-      String(num2) +
-      " ** " +
-      "Rank Change: " +
-      String(rankChange) +
-      "Is this a thread? " +
-      isThread;
-    if (isThread) {
-      p.style.backgroundColor = "blue";
-    }
-    if (isPreviousThread) {
-      p.style.backgroundColor = "red";
-    }
-    // counter++;
+    const icon = ui.createRankIcon(rankChange);
 
-    const aNode =
-      mutation.addedNodes[0].lastChild.firstChild.firstChild.lastChild.lastChild
-        .firstChild.firstChild.firstChild.lastChild;
-    aNode.parentNode.insertBefore(symbol, aNode.nextSibling);
-    mutation.addedNodes[0].insertBefore(p, mutation.addedNodes[0].firstChild);
-    mutation.addedNodes[0].insertBefore(
-      symbol,
-      mutation.addedNodes[0].firstChild
-    );
-    aNode.parentNode.insertBefore(symbol, aNode.nextSibling);
-    // console.log(tweets.length);
-    // console.log(tweetContents);
-    // console.log(mutation);
+    // Add icon next to the Tweet title.
+    link.parentNode.appendChild(icon);
+  } else {
+    console.log("This is not a Tweet / Failed to catch the Tweet");
   }
-
-  // return mutationType;
 };
 
 // ==============================
@@ -325,10 +210,9 @@ async function init() {
   try {
     const res = await fetch("https://algoritter.herokuapp.com/");
     const data = await res.json();
-    console.log(data.data);
     let threadFreeTweetList = [];
     let tweetsToRemove = [];
-    data.data.forEach(tweet => {
+    data.data.forEach((tweet) => {
       if (tweet.in_reply_to_status_id_str !== null) {
         tweetsToRemove.push(tweet.in_reply_to_status_id_str);
         tweetsToRemove.push(tweet.id_str);
@@ -337,9 +221,9 @@ async function init() {
 
     console.log(tweetsToRemove);
     threadFreeTweetList = data.data.filter(
-      tweet => !tweetsToRemove.includes(tweet.id_str)
+      (tweet) => !tweetsToRemove.includes(tweet.id_str)
     );
-    tweetsToCompare = threadFreeTweetList.map(tweet =>
+    tweetsToCompare = threadFreeTweetList.map((tweet) =>
       tweet.retweeted_status == null
         ? tweet.id_str
         : tweet.retweeted_status.id_str
@@ -355,22 +239,13 @@ async function init() {
 
 init();
 
-// const app = () => {
-
-//   const init = () => {
-//     return "gogog";
-//   };
-
-//   return {
-//     init: init
-//   };
-
-// };
-
 function UI() {
-  const createRankSymbol = rankDiff => {
+  const createRankIcon = (rankDiff) => {
     const div = document.createElement("div");
     const arrow = document.createElement("div");
+    div.style.fontFamily = "Arial";
+    div.style.fontSize = "0.9rem";
+    div.style.textAlign = "center";
     arrow.style.width = "0";
     arrow.style.height = "0";
     arrow.style.display = "inline-block";
@@ -378,31 +253,34 @@ function UI() {
     arrow.style.borderStyle = "inset";
     arrow.style.borderWidth = "10px";
 
-    if (rankDiff > 0) {
-      arrow.style.borderBottom = "10px solid green";
-      arrow.style.transform = "translate(0px, 30%) rotate(-90deg)";
-      div.style.color = "green";
-    } else if (rankDiff === -1) {
-      arrow.style.borderRight = "10px solid black";
-      arrow.style.transform = "translate(0px, 30%) rotate(45deg)";
-      div.style.color = "black";
+    if (rankDiff === 999) {
+      arrow.style.border = "10px solid purple";
+      arrow.style.transform = "translate(0%, 20%) scale(.8)";
+      arrow.style.borderRadius = "50%";
+      div.appendChild(arrow);
+    } else if (rankDiff > 0) {
+      arrow.style.borderBottom = "10px solid #00c853";
+      arrow.style.transform = "translate(5%, -5%)";
+      div.style.color = "#00c853";
+      div.appendChild(arrow);
+      div.appendChild(document.createTextNode(`+${rankDiff}`));
     } else if (rankDiff < 0) {
-      arrow.style.transform = "translate(30%, 30%) rotate(-90deg)";
-      arrow.style.borderTop = "10px solid red";
-      div.style.color = "red";
+      arrow.style.transform = "translate(0%, 50%) rotate(0deg)";
+      arrow.style.borderTop = "10px solid #dd2c00";
+      div.style.color = "#dd2c00";
+      div.appendChild(arrow);
+      div.appendChild(document.createTextNode(`${rankDiff}`));
     } else {
-      arrow.style.borderLeft = "10px solid yellow";
-      arrow.style.transform = "translate(-30%, 30%) rotate(180deg)";
+      arrow.style.border = "10px solid yellow";
+      arrow.style.transform = "translate(0%, 25%) scale(.7, .2)";
       div.style.color = "yellow";
+      div.appendChild(arrow);
     }
-
-    div.appendChild(arrow);
-    div.appendChild(document.createTextNode(`${rankDiff}`));
 
     return div;
   };
 
   return {
-    createRankSymbol: createRankSymbol
+    createRankIcon: createRankIcon,
   };
 }
