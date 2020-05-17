@@ -10,11 +10,6 @@ const mutationObserver = new MutationObserver((mutations) => {
   });
 });
 
-mutationObserver.observe(document.documentElement, {
-  subtree: true,
-  childList: true,
-});
-
 const getinitialTweets = () => {
   const div = document.querySelector(
     "div[aria-label='Timeline: Your Home Timeline']"
@@ -68,14 +63,15 @@ const getinitialTweets = () => {
       // Thread Elimination
 
       if (
-        tweet.lastChild.firstChild.firstChild.lastChild.firstChild.lastChild.classList.contains(
+        tweet.lastChild.firstChild.firstChild.lastChild.firstChild.lastChild.lastChild.firstChild.lastChild.classList.contains(
           "r-m5arl1"
-        ) ||
-        (tweet.lastChild.firstChild.firstChild.firstChild.firstChild.childNodes
-          .length > 0 &&
-          tweet.lastChild.firstChild.firstChild.firstChild.firstChild.firstChild.classList.contains(
-            "r-m5arl1"
-          ))
+        )
+        // ||
+        // (tweet.lastChild.firstChild.firstChild.firstChild.firstChild.childNodes
+        //   .length > 0 &&
+        //   tweet.lastChild.firstChild.firstChild.firstChild.firstChild.firstChild.classList.contains(
+        //     "r-m5arl1"
+        //   ))
       ) {
         console.log("returning");
         return;
@@ -134,12 +130,12 @@ const identifyMutation = (mutation) => {
     mutation.addedNodes[0].textContent != "" &&
     !mutation.addedNodes[0].textContent.includes("Who to Follow") &&
     mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
-      .childNodes[0].tagName == "ARTICLE"
+      .childNodes[0].firstChild.tagName == "ARTICLE"
   ) {
     // Defining the link in steps, otherwise it is very difficult to troubleshoot when Twitter changes the DOM structure.
     let article =
       mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
-        .childNodes[0];
+        .childNodes[0].firstChild;
     let tweetColumn = article.firstChild.lastChild.lastChild;
     let upperBar = tweetColumn.firstChild.firstChild.firstChild;
     let link = upperBar.firstChild.lastChild;
@@ -161,15 +157,16 @@ const identifyMutation = (mutation) => {
 
     // Return if isThread -- Need to find a cleaner way of implementing this.
     if (
-      mutation.addedNodes[0].lastChild.firstChild.firstChild.lastChild.firstChild.lastChild.classList.contains(
+      article.firstChild.lastChild.firstChild.lastChild.classList.contains(
         "r-m5arl1"
       ) ||
-      (mutation.addedNodes[0].lastChild.firstChild.firstChild.firstChild
-        .firstChild.childNodes.length > 0 &&
-        mutation.addedNodes[0].lastChild.firstChild.firstChild.firstChild.firstChild.firstChild.classList.contains(
+      (article.firstChild.firstChild.firstChild.firstChild.childNodes.length >
+        0 &&
+        article.firstChild.firstChild.firstChild.firstChild.firstChild.classList.contains(
           "r-m5arl1"
         ))
     ) {
+      console.log("thread detected");
       return;
     }
 
@@ -208,6 +205,8 @@ const identifyMutation = (mutation) => {
 // ==============================
 async function init() {
   try {
+    console.log("script is running.");
+
     const res = await fetch("https://algoritter.herokuapp.com/");
     const data = await res.json();
     let threadFreeTweetList = [];
@@ -219,7 +218,6 @@ async function init() {
       }
     });
 
-    console.log(tweetsToRemove);
     threadFreeTweetList = data.data.filter(
       (tweet) => !tweetsToRemove.includes(tweet.id_str)
     );
@@ -228,10 +226,13 @@ async function init() {
         ? tweet.id_str
         : tweet.retweeted_status.id_str
     );
-    console.log(threadFreeTweetList);
-    getinitialTweets();
-    console.log(data);
-    console.log(tweetsToCompare);
+
+    // getinitialTweets();
+
+    mutationObserver.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+    });
   } catch (error) {
     console.log(error);
   }
