@@ -5,120 +5,32 @@ let tweetsToCompare = [];
 
 const mutationObserver = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
-    // Determine type of mutation e.g.
-    identifyMutation(mutation);
+    handleMutation(mutation);
   });
 });
-
-const getinitialTweets = () => {
-  const div = document.querySelector(
-    "div[aria-label='Timeline: Your Home Timeline']"
-  );
-  const initialTweets = div.childNodes[0].childNodes[0].childNodes;
-  initialTweets.forEach((tweet) => {
-    if (
-      tweet.textContent !== "" &&
-      tweet.textContent.substring(
-        tweet.textContent.length - 8,
-        tweet.textContent.length
-      ) !== "Promoted" &&
-      !tweet.textContent.includes("Who to Follow")
-    ) {
-      let href;
-      let hrefParent;
-
-      if (
-        tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
-          .firstChild.firstChild.firstChild.firstChild.lastChild.href !==
-        undefined
-      ) {
-        href =
-          tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
-            .firstChild.firstChild.firstChild.firstChild.lastChild.href;
-        hrefParent =
-          tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
-            .firstChild.firstChild.firstChild.firstChild.lastChild;
-      } else {
-        href =
-          tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
-            .lastChild.firstChild.firstChild.firstChild.firstChild.lastChild
-            .href;
-        hrefParent =
-          tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
-            .lastChild.firstChild.firstChild.firstChild.firstChild;
-      }
-
-      console.log(href);
-
-      let isRetweet = false;
-      let isThread = false;
-      if (
-        tweet.lastChild.firstChild.firstChild.firstChild.textContent.includes(
-          "Retweeted"
-        )
-      ) {
-        isRetweet = true;
-      }
-
-      // Thread Elimination
-
-      if (
-        tweet.lastChild.firstChild.firstChild.lastChild.firstChild.lastChild.lastChild.firstChild.lastChild.classList.contains(
-          "r-m5arl1"
-        )
-        // ||
-        // (tweet.lastChild.firstChild.firstChild.firstChild.firstChild.childNodes
-        //   .length > 0 &&
-        //   tweet.lastChild.firstChild.firstChild.firstChild.firstChild.firstChild.classList.contains(
-        //     "r-m5arl1"
-        //   ))
-      ) {
-        console.log("returning");
-        return;
-      }
-
-      const tweetId = href.split("/").pop();
-
-      if (!tweets.includes(tweetId)) {
-        tweets.push(tweetId);
-      }
-
-      console.log(tweets.length);
-
-      const num = tweets.indexOf(tweetId);
-      const num2 = tweetsToCompare.indexOf(tweetId);
-      const rankChange = num2 == -1 ? 999 : num2 - num;
-      const ui = new UI();
-      const icon = ui.createRankIcon(rankChange);
-
-      console.log("lol");
-      console.log(icon);
-
-      // const aNode =
-      //   tweet.lastChild.firstChild.firstChild.firstChild.lastChild.lastChild
-      //     .firstChild.firstChild.firstChild.firstChild.lastChild;
-      // hrefParent.parentNode.parentNode.insertBefore(
-      //   icon,
-      //   hrefParent.parentNode.nextSibling
-      // );
-
-      hrefParent.appendChild(icon);
-    }
-  });
-};
-
-// For now disabled
-
-// UI Pattern
-// Create UI object that returns all methods.
-// Finally const ui = new UI()
-// ui.observe(args)
 
 // ==============================
 // IDENTIFY EACH MUTATION AND PROCESS IF IT IS A TWEET
 // ==============================
-const identifyMutation = (mutation) => {
-  let mutationType = "";
+const handleMutation = (mutation) => {
+  if (
+    mutation.addedNodes.length > 0 &&
+    mutation.addedNodes[0].tagName === "SECTION" &&
+    mutation.addedNodes[0].lastChild.ariaLabel ===
+      "Timeline: Your Home Timeline"
+  ) {
+    console.log(mutation);
+  }
+
+  // Check if the tweets are initial tweets - the difference from regular tweets is
+  // that the first couple tweets are added together as a section.
+  // Therefore, mutationHandler should catch if the addedNode is a section and parse href accordingly.
+
+  // if (mutation.addedNodes.length > 0 &&) {
+
+  // }
+
+  // mutation.addedNodes.length > 0 && console.log(mutation);
 
   // Check to see if the added node is the div that contains the tweet.
   // Note that this method is very fragile and doesn't work if Twitter changes the DOM structure.
@@ -133,29 +45,31 @@ const identifyMutation = (mutation) => {
       .childNodes[0].firstChild.tagName == "ARTICLE"
   ) {
     // Defining the link in steps, otherwise it is very difficult to troubleshoot when Twitter changes the DOM structure.
+    let div = mutation.addedNodes[0];
     let article =
-      mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0]
-        .childNodes[0].firstChild;
+      div.childNodes[0].childNodes[0].childNodes[0].childNodes[0].firstChild;
     let tweetColumn = article.firstChild.lastChild.lastChild;
     let upperBar = tweetColumn.firstChild.firstChild.firstChild;
     let link = upperBar.firstChild.lastChild;
 
+    console.log(mutation);
+
     // Get the tweet handle link.
     const href = link.href;
 
-    let isThread = false;
-    let isPreviousThread = false;
-    let isRetweet = false;
+    // let isThread = false;
+    // let isPreviousThread = false;
+    // let isRetweet = false;
 
-    if (
-      mutation.addedNodes[0].lastChild.firstChild.firstChild.firstChild.textContent.includes(
-        "Retweeted"
-      )
-    ) {
-      isRetweet = true;
-    }
+    // if (
+    //   mutation.addedNodes[0].lastChild.firstChild.firstChild.firstChild.textContent.includes(
+    //     "Retweeted"
+    //   )
+    // ) {
+    //   isRetweet = true;
+    // }
 
-    // Return if isThread -- Need to find a cleaner way of implementing this.
+    // Return if the tweet is part of a thread -- Need to find a cleaner way of implementing this.
     if (
       article.firstChild.lastChild.firstChild.lastChild.classList.contains(
         "r-m5arl1"
@@ -166,15 +80,14 @@ const identifyMutation = (mutation) => {
           "r-m5arl1"
         ))
     ) {
-      console.log("thread detected");
       return;
     }
 
-    const tweetContent = mutation.addedNodes[0].textContent;
-    const tweetContentLastChars = tweetContent.substring(
-      tweetContent.length - 25,
-      tweetContent.length
-    );
+    // const tweetContent = mutation.addedNodes[0].textContent;
+    // const tweetContentLastChars = tweetContent.substring(
+    //   tweetContent.length - 25,
+    //   tweetContent.length
+    // );
 
     // Get tweet handle from the URL.
     const tweetId = href.split("/").pop();
@@ -185,9 +98,10 @@ const identifyMutation = (mutation) => {
     }
 
     // Get indices of the tweet in client tweet list and server tweet list and get the difference in ranks.
-    const num = tweets.indexOf(tweetId);
-    const num2 = tweetsToCompare.indexOf(tweetId);
-    const rankChange = num2 == -1 ? 999 : num2 - num;
+    const onScreenPosition = tweets.indexOf(tweetId);
+    const originalPosition = tweetsToCompare.indexOf(tweetId);
+    const rankChange =
+      originalPosition == -1 ? 999 : originalPosition - onScreenPosition;
 
     // Initialize a new UI object and create an icon based on the rank differences between client and server.
     const ui = new UI();
