@@ -14,3 +14,14 @@ chrome.runtime.onInstalled.addListener(() => {
     ]);
   });
 });
+
+// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//   console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
+//   if (request.greeting == "hello") sendResponse({ farewell: "goodbye" });
+// });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log("From BACKGROUND.JS → Printing request.session");
+  console.log(request.session);
+  sendResponse(true);
+});

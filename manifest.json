@@ -7,11 +7,15 @@
     {
       "matches": ["https://twitter.com/", "https://twitter.com/home"],
       "run_at": "document_idle",
-      "js": ["getTweets.js"]
+      "js": ["js/getTweets.js"]
+    },
+    {
+      "matches": ["http://localhost:5000/auth/success*"],
+      "js": ["js/session.js"]
     }
   ],
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["js/background.js"],
     "persistent": false
   },
   "page_action": {

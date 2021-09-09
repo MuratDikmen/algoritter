@@ -136,22 +136,23 @@ async function init() {
     const res = await fetch("https://algoritter.herokuapp.com/");
     const data = await res.json();
 
+    console.log(res);
+    console.log(data);
+
     // Identify threads and remove them from the data
     let threadFreeTweetList = [];
     let tweetsToRemove = [];
-    data.data.forEach((tweet) => {
+    data.tweets.forEach((tweet) => {
       if (tweet.in_reply_to_status_id_str !== null) {
         tweetsToRemove.push(tweet.in_reply_to_status_id_str);
         tweetsToRemove.push(tweet.id_str);
       }
     });
-    threadFreeTweetList = data.data.filter((tweet) => !tweetsToRemove.includes(tweet.id_str));
+    threadFreeTweetList = data.tweets.filter((tweet) => !tweetsToRemove.includes(tweet.id_str));
 
     // Create the tweet list by getting the correct tweet handle
     // Get tweet handle for the retweeter for retweets, otherwise regular tweet handle
-    tweetsToCompare = threadFreeTweetList.map((tweet) =>
-      tweet.retweeted_status == null ? tweet.id_str : tweet.retweeted_status.id_str
-    );
+    tweetsToCompare = threadFreeTweetList.map((tweet) => (tweet.retweeted_status == null ? tweet.id_str : tweet.retweeted_status.id_str));
 
     // Start observing the mutations
     mutationObserver.observe(document.documentElement, {
@@ -166,4 +167,36 @@ async function init() {
 // ===================================
 // INIT APP
 // ===================================
-init();
+// init();
+
+async function login() {
+  try {
+    const res = await fetch("http://localhost:5000/login?id=");
+    const data = await res.json();
+    if (data.status === "error" && data.message === "authentication failed") {
+      const newWindow = window.open(
+        "http://localhost:5000/auth",
+        "Twitter Authentication",
+        "menubar=yes,location=no,resizable=yes,scrollbars=yes,status=yes, width=800,height=600"
+      );
+      // chrome.runtime.sendMessage({ greeting: "hello" }, (response) => console.log(response.farewell));
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+function success() {
+  console.log("popup window closed and we can safely initialize the app now");
+}
+
+window.addEventListener(
+  "message",
+  (event) => {
+    console.log(event.source);
+    console.log(event.data);
+  },
+  false
+);
+
+login();
